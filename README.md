@@ -49,15 +49,15 @@ Let's decompose instruction execution into 5 stages : <b> Instruction Fetch, Ins
 ||Picture|
 |---|---|
 |Stages|<img alt="image" src="Img/CPU/Intr_for_Pipel.png">|
-|The Current Microarchitecture.|<img alt="image" src="Img/CPU/Pipelined_CPU.png"><br>[HMU inputs and outputs](#hmu-inputs-and-outputs)|
+|The Current Microarchitecture.<br><br>Pass data to RegWriteM and RegWriteW, if data forwarding solution for data hazard applied<br><br>From ForwardAE,ForwardBE we take data, if we use data forwarding to solve data hazard<br><br>Stall F,Stall D -- activated, if stallying solution for data hazard applied<br><br>FlushD and FlushB - flush instructions, if we taking brancing|<img alt="image" src="Img/CPU/Pipelined_CPU.png"><br>[HMU inputs and outputs](#hmu-inputs-and-outputs)|
 
 
 
 #### Data and control hazards
 
-Since multiple instructions are processed simultaneously, requirements for <b>shared recources</b> van result in conflicts(<b>hazards</b>).
+Since multiple instructions are processed simultaneously, requirements for <b>shared recources</b> can result in conflicts(<b>hazards</b>).
 
-<b>Example</b>: squential instructions. In first one we store result (`add x1,x2,x3`) and in the next -- work with it(`sub x5,x1,x4`). The result of the first instruction is going to be ready only in the last stage(write back), while second instruction already read wrong(old) data from register x1 on the 2<sup>nd</sup> stage and used it in the exec stage.
+> <b>Example</b>: squential instructions. In first one we store result (`add x1,x2,x3`) and in the next -- work with it(`sub x5,x1,x4`). The result of the first instruction is going to be ready only in the last stage(write back), while second instruction already read wrong(old) data from register x1 on the 2<sup>nd</sup> stage and used it in the exec stage.
 
 <b>Hazard types:</b>
 <ol>
@@ -66,7 +66,7 @@ Since multiple instructions are processed simultaneously, requirements for <b>sh
 |Example|Explanation and Solution|
 |---|---|
 |`add x1,x2,x3`<br>`add x4,x1,x5`|&nbsp;&nbsp;&nbsp;&nbsp;The result of the 1<sup>st</sup> instr going to be written into x1 register only in the last<br> stage(write back), while the second intruction going to reach 4<sup>th</sup> stage and<br> had read wrong data on the 2<sup>nd</sup> and procced it in the 3<sup>rd</sup> stage.<br>&nbsp;&nbsp;&nbsp;&nbsp;We are going to resolve it by <b>forwarding</b>. The data from 1<sup>st</sup> instruction is already<br> available in the 4<sup>th</sup> stage (MEM) and therefore it can be taken from those data paths<br> (and stored into regWriteM)before writing it into the destination register.|
-|`lw x8, 40(x0)`<br>`add x4,x8,x1`|*The problem the same, as higher.*<br>&nbsp;&nbsp;&nbsp;&nbsp; The result of lw is not going to be ready in the 4<sup>th</sup> stage, cause result of reading<br> from memory going to appear only in the last stage. So, simple there is <b>no way</b><br> how to get result for the 2<sup>nd</sup> inst, while it reached 3<sup>rd</sup> stage. We will resolve it<br> by <b>stallying</b>(= frozen) pipeline(activate Stall D). Pr instructions not going forward, until we will<br> finish current instruction.|
+|`lw x8, 40(x0)`<br>`add x4,x8,x1`|*The problem the same, as higher.*<br>&nbsp;&nbsp;&nbsp;&nbsp; The result of lw is not going to be ready in the 4<sup>th</sup> stage, cause result of reading<br> from memory going to appear only in the last stage. So, simple there is <b>no way</b><br> how to get result for the 2<sup>nd</sup> inst, while it reached 3<sup>rd</sup> stage. We will resolve it<br> by <b>stallying</b>(= frozen) pipeline(activate Stall D). Pr instructions not going forward,<br> until we will finish current instruction.|
 <li><b>Control</b> - caused by instructions that change PC.</li>
 
 |Example|Explanation and Solution|
@@ -76,13 +76,45 @@ Since multiple instructions are processed simultaneously, requirements for <b>sh
 <img alt="image" src="Img/CPU/Struct_Hazard.png">
 </ol>
 
-[Full example](#pipeling-example)
+[Full example](#pipelining-example)
 
 ### Interrupt subsystem and security levels.
 
 ## 2. Cache Memory
 
+### Cache memory
+
+#### Motivation
+
+&nbsp;&nbsp;&nbsp;&nbsp;Two types of RAM(Random Access Memory): <b>SRAM</b>(Static RAM) and <b>DRAM</b>(Dynamic RAM) ([\*](#sram-and-dram)). Comparing them, SRAM is much faster than DRAM and consumpt lower power. But, it is <b>more expensive</b> ([\*](#sram-vs-dram)). Typically, Main Memory implemented as DRAM, cause of lower cost and therefore possibilities
+to realize greater capacities up to hundreds of GB. And, gap between the CPU performance and MM access latency is widening for last 50 years, and difference between them is something like in 10<sup>6</sup> times ([\*](#cpu-vs-mm))!!!
+
+#### Idea
+
+&nbsp;&nbsp;&nbsp;&nbsp;The solution of the widening gap between CPU performance and DRAM memory access latency has traditionally been the <b>hierarchical memory architecture</b>. Memory access latency in this hierarchy decreases towards CPU, since the memory size decreases. This allows to hide the latency of a slow MM: CPU primarily works with smaller, but faster cache memories (CM). The key condition here is that programs maximally exploit principles of Memory Locality: the <b>temporal</b>(Items that have been <b>accessed recently</b> will be accessed soon again) and <b>spatial</b>(Items that are <b>stored close</b> to those currently accessed will be accessed soon) locality principle.
+
+<img alt="image" src="Img/Cache/hierarchical_memory.png">
+
+***Cache memory*** -- is a memory invisible for a program that the runtime HW system uses automatically to store repeatedly accessed data or instructions <b>closer to CPU<b>. 
+> The task of CM is to speedup access to frequently used MM data/instructions by keeping copies of MM data/instructions.
+>
+> CM is integrated <b>inside</b> the CPU. 
+>
+> It is realized as SRAM due to performance reasons.
+
+### Virtual memory
+
+### Memory coherence
+
+### Atomic instructions
+
 ## 3. Superpipelinging CPU
+
+### Dynamic superscalar microarchitecture
+
+### Load/Store instruction processing in superscalar processors
+
+### Branch prediction in superscalar microarchitectures
 
 
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
@@ -116,3 +148,15 @@ Since multiple instructions are processed simultaneously, requirements for <b>sh
 |<img alt="image" src="Img/CPU/Pipeline_example/Example_8.png">||
 |<img alt="image" src="Img/CPU/Pipeline_example/Example_9.png">||
 |<img alt="image" src="Img/CPU/Pipeline_example/Example_10.png">||
+
+## SRAM and DRAM
+
+<img alt="image" src="Img/Cache/sram_and_dram.png">
+
+## SRAM vs DRAM
+
+<img alt="image" src="Img/Cache/sram_vs_dram.png">
+
+## CPU vs MM
+
+<img alt="image" src="Img/Cache/cpu_vs_mm.png">
