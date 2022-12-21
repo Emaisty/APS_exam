@@ -102,6 +102,50 @@ to realize greater capacities up to hundreds of GB. And, gap between the CPU per
 >
 > It is realized as SRAM due to performance reasons.
 
+#### Relation between Main Memory (MM) and Cache Memory (CM)
+
+&nbsp;&nbsp;&nbsp;&nbsp;The address range of CPU's is huge. At the same time, the size of fast CMs not so big. So, data between MM and CM transferred in blocks (BlockIndex = Address div BlockSize (BS)). The MM can be viewed as a <b>linear array of equally-sized indexed blocks</b>. While, CM numbers of block is smaller, than MM blocks, CM at a given time able to store only a <b>very limited</b> number of MM blocks.
+
+Basic Structure           |  Scheme
+:-------------------------:|:-------------------------:
+<img alt="image" src="Img/Cache/direct-mapped_CM_shem.png"> |  <img alt="image" src="Img/Cache/direct-mapped_CM_graph.png">
+
+> This type of memory called <b>direct-mapped</b>
+
+#### Address Collision Problem in Direct-Mapped CMs
+
+&nbsp;&nbsp;&nbsp;&nbsp;If different addresses going to have same set -- they going to replace each other. And if we asking this block of memory in row, it even <b>could slow-down computation!</b>
+
+<img alt="image" src="Img/Cache/collision_problem.png">
+
+Two solutions
+<ol>
+<li>Enlargement of the CM -- it can only reduce the probability, but not a universal solution.</li>
+<li><b>Different internal organization</b> -- let's create N instances of CM (<b>ways</b>). We will call it <b>N-way set-associative CM</b>.</li>
+</ol>
+
+Basic Structure (2-way)        |  Scheme (4-way)
+:-------------------------:|:-------------------------:
+<img alt="image" src="Img/Cache/2-way_CM.png"> |  <img alt="image" src="Img/Cache/4-way_CM.png">
+
+> Other extreme : <b>Fully associative CMs</b> -- number of CM block equals the number of CM ways.
+
+
+<img alt="image" src="Img/Cache/principles_of_set-associative.png">
+
+#### Cache block replacement policy. Pseudo-Least Recently Used (LRU).
+
+&nbsp;&nbsp;&nbsp;&nbsp;Consider a 4-way set-associative CM. It will hold 3-bit (N-way - 1) state vector.
+<ol>
+<li><b>Miss or hit?</b>: <b>Hit</b> - use that block; <b>Miss</b> - next.</li>
+<li><b>Are all 4 blocks valid?</b>: <b>No</b> - Allocate an invalid block and change the state(based on table.); <b>Yes</b> - next; 
+<li>00X - first block, 01X - second, 1X0 - third, 1X1 - forth. Replace this block and change state.<b> 00X -> 11X; 01X -> 10X; 1X0 -> 0X1; 1X1 -> 0X0.</li>
+</ol>
+
+#### CM from programmer's prespective
+
+&nbsp;&nbsp;&nbsp;&nbsp; Application of temporal and spacial locality can provide significant execution speedups, but still: even the best compiler just compiles a code written by a programmer. So, he has the greatest responsibility for efficiency. <b>Instruction CM</b> efficiency will depends on structure and control flow of executed algorithms. <b>Data CM</b> - suitable data layout is data, processed sequentially are stored sequentially in the MM.
+
 ### Virtual memory
 
 ### Memory coherence
@@ -130,7 +174,7 @@ to realize greater capacities up to hundreds of GB. And, gap between the CPU per
 <img alt="image" src="Img/CPU/exml_MM_2.png">
 <img alt="image" src="Img/CPU/exml_MM_3.png">
 
-## HMU inputs and outputs
+## HMU(Hazard Menegment Unit) inputs and outputs
 
 <img alt="image" src="Img/CPU/HMU.png">
 
